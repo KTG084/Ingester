@@ -1,7 +1,13 @@
-import React from "react";
+import React from 'react'
 
-const Page = () => {
-  return <div></div>;
-};
+const page = () => {
+  return (
+    <div className='flex flex-col min-h-screen overflow-hidden text-white'>
+      <section className='relative py-24 flex-grow'>
 
-export default Page;
+      </section>
+    </div>
+  )
+}
+
+export default page

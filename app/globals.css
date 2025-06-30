@@ -6,7 +6,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Optional if you want a fixed background */
+  overflow: auto; /* Optional if you want a fixed background */
 }
 @custom-variant dark (&:is(.dark *));
 
@@ -126,4 +126,36 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+@keyframes sound-wave {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-sound-wave {
+  animation: sound-wave 0.8s infinite ease-in-out;
+}
+
+/* Custom scrollbar style */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #22d3ee transparent; /* Thumb and track for Firefox */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #22d3ee; /* cyan-400 */
+  border-radius: 10px;
 }

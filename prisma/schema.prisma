@@ -13,17 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-  model User {
-  id                 String    @id @default(cuid()) @map("_id")
-  email              String    @unique
+model User {
+  id                 String     @id @default(cuid()) @map("_id")
+  email              String     @unique
   password           String?
   emailVerified      DateTime?
   image              String?
   name               String?
   razorpayCustomerId String?
-  purchases             Purchase[]
-  accounts              Account[]
+  purchases          Purchase[]
+  accounts           Account[]
+  Plan               Plan[]
 }
 
 model Account {
@@ -45,25 +45,46 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model Course {
-  id          String     @id @map("_id") @db.ObjectId
-  title       String
-  description String
-  imageUrl    String
-  price       Float
+model Plan {
+  id          String      @id @map("_id") @db.ObjectId
+  userId      String
+  workoutPlan WorkOutPlan
   purchases   Purchase[]
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@unique([userId, id])
+  @@map("plans")
+}
+
+type WorkOutPlan {
+  schedule  String[]
+  exercises Exercises[]
+}
+
+type Exercises {
+  day      String
+  routines Routine[]
+}
+
+type Routine {
+  name        String
+  sets        Int?
+  reps        Int?
+  duration    String?
+  description String?
+  exercises   String[]
 }
 
 model Purchase {
   id                 String @id @default(cuid()) @map("_id")
   userId             String
-  courseId           String @db.ObjectId
+  planId             String @db.ObjectId
   amount             Float
   purchaseDate       Int
   razorpayPurchaseId String @unique
 
-  user   User   @relation(fields: [userId], references: [id])
-  course Course @relation(fields: [courseId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
 
-  @@unique([userId, courseId])
+  @@unique([userId, planId])
 }

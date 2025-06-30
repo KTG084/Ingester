@@ -6,10 +6,10 @@ import {
   Activity,
   Component,
   HomeIcon,
-  Package,
   User,
   Bolt,
   LogOut,
+  DumbbellIcon,
 } from "lucide-react";
 import {
   Dock,
@@ -30,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { showToast } from "@/lib/toaster";
 import { useSearchParams } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
 const data = [
   {
@@ -37,14 +38,14 @@ const data = [
     icon: (
       <HomeIcon className="h-full w-full text-white dark:text-neutral-300" />
     ),
-    href: "#",
+    href: "/",
   },
   {
-    title: "Products",
+    title: "Generate",
     icon: (
-      <Package className="h-full w-full text-white dark:text-neutral-300" />
+      <DumbbellIcon className="h-full w-full text-white dark:text-neutral-300" />
     ),
-    href: "#",
+    href: "/generate",
   },
   {
     title: "Components",
@@ -63,6 +64,7 @@ const data = [
 ];
 
 const Navbar = () => {
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const toast = searchParams.get("toast");
   const toastShown = useRef(false);
@@ -77,6 +79,9 @@ const Navbar = () => {
         toastShown.current = true;
       } else if (toast === "login_required") {
         showToast.warning("Please login to continue");
+        toastShown.current = true;
+      } else if (toast === "logged_out") {
+        showToast.warning("You are logged out");
         toastShown.current = true;
       }
     }
@@ -104,20 +109,22 @@ const Navbar = () => {
             panelHeight={70}
           >
             {data.map((item, idx) => (
-              <DockItem
-                key={idx}
-                className="aspect-square rounded-full cursor-pointer bg-[#0a0a1a]/40 border border-cyan-400/20 hover:shadow-[0_0_11px_4px_#00ffff33]"
-              >
-                <DockLabel>{item.title}</DockLabel>
-                <DockIcon>{item.icon}</DockIcon>
-              </DockItem>
+              <Link key={idx} href={item.href}>
+                <DockItem
+                  key={idx}
+                  className="aspect-square rounded-full cursor-pointer bg-[#0a0a1a]/40 border border-cyan-400/20 hover:shadow-[0_0_11px_4px_#00ffff33]"
+                >
+                  <DockLabel>{item.title}</DockLabel>
+                  <DockIcon>{item.icon}</DockIcon>
+                </DockItem>
+              </Link>
             ))}
           </Dock>
         </div>
 
         {/* Right Side: Button or Avatar Dropdown */}
         <div className="shrink-0 flex">
-          {true && (
+          {status === "unauthenticated" && (
             <Link href="/auth/login">
               <Button
                 className="bg-[#0a0a1a]/60 
@@ -136,12 +143,14 @@ const Navbar = () => {
             </Link>
           )}
 
-          {false && (
+          {status === "authenticated" && (
             <DropdownMenu>
               <DropdownMenuTrigger className="p-1 ml-2 bg-[#0a0a1a]/40 backdrop-blur-md border border-cyan-400/10 rounded-full shadow-[0_0_10px_#00ffff33] hover:shadow-[0_0_11px_4px_#00ffff66] transition-all duration-300">
                 <Avatar className="h-6.5 w-6.5 shadow-[0_0_6px_#00ffff33] transition-shadow duration-300">
                   <AvatarImage
-                    src="https://github.com/shadcn.png"
+                    src={
+                      session?.user?.image || "https://github.com/shadcn.png"
+                    }
                     className="rounded-full object-cover"
                   />
                   <AvatarFallback className="text-white bg-[#0a0a1a]/70 font-semibold">
@@ -152,7 +161,7 @@ const Navbar = () => {
 
               <DropdownMenuContent className="bg-[#0a0a1a]/40 backdrop-blur-lg rounded-xl mt-3 border border-cyan-400/20 shadow-[0_0_25px_#00ffff22] text-white w-38 p-2 animate-in fade-in zoom-in-95">
                 <DropdownMenuLabel className="text-white font-semibold px-3 pb-1">
-                  Karan
+                  {session.user?.name}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-white/20 my-1" />
 
@@ -168,7 +177,7 @@ const Navbar = () => {
 
                 <DropdownMenuItem
                   onClick={() => {
-                    // signOut({ callbackUrl: "/?toast=logged_out" });
+                    signOut({ callbackUrl: "/?toast=logged_out" });
                   }}
                   className="flex items-center gap-2 text-red-400 hover:bg-red-500/20 px-3 py-2 rounded-md transition-all"
                 >

@@ -19,10 +19,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { showToast } from "@/lib/toaster";
+import { TextShimmerWave } from "@/components/motion-primitives/text-shimmer-wave";
 
 const formSchema = z.object({
   username: z.string().min(1, {
@@ -82,12 +82,10 @@ const Page = () => {
       }
       //Toast
       showToast.error(fallbackMessage);
-    } finally {
-      setloading(false);
     }
   }
   return (
-    <div className="bg-[#0a0a1a]/20 backdrop-blur-lg min-h-screen flex items-center justify-center px-4">
+    <div className="-mt-24 bg-[#0a0a1a]/20 backdrop-blur-lg min-h-screen flex items-center justify-center px-4">
       <AnimatedContent
         distance={200}
         direction="vertical"
@@ -198,7 +196,9 @@ const Page = () => {
                           text-white font-semibold text-lg py-3 rounded-lg shadow-[0_4px_15px_rgba(0,255,255,0.3)] transition duration-300"
               >
                 {loading ? (
-                  <Loader className="animate-spin w-5 h-5" />
+                  <TextShimmerWave className="text-white font-mono text-sm">
+                    Submitting...
+                  </TextShimmerWave>
                 ) : (
                   "Submit"
                 )}
