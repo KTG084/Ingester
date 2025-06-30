@@ -151,7 +151,7 @@ const Navbar = () => {
                     src={
                       session?.user?.image || "https://github.com/shadcn.png"
                     }
-                    className="rounded-full object-cover"
+                    className=" object-cover"
                   />
                   <AvatarFallback className="text-white bg-[#0a0a1a]/70 font-semibold">
                     KM
