@@ -1,23 +1,50 @@
 "use client";
+import React, { useRef, useState } from "react";
+import { motion, MotionConfig } from "framer-motion";
+import useClickOutside from "@/hooks/useClickOutside";
+import { ArrowLeft, Search, User } from "lucide-react";
 
-import React, { useEffect, useRef } from "react";
+import type { Transition } from "framer-motion";
+const transition: Transition = {
+  type: "spring",
+  bounce: 0.1,
+  duration: 0.2,
+};
 
-import {
-  Activity,
-  Component,
-  HomeIcon,
-  User,
-  Bolt,
-  LogOut,
-  DumbbellIcon,
-} from "lucide-react";
+function BButton({
+  children,
+  onClick,
+  disabled,
+  ariaLabel,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  ariaLabel?: string;
+}) {
+  return (
+    <button
+      className="relative flex h-8 w-8 shrink-0 scale-100 select-none appearance-none items-center justify-center rounded-xl text-zinc-500 transition-colors hover:bg-cyan-400/20 hover:text-zinc-800 focus-visible:ring-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </button>
+  );
+}
+
+import { useEffect } from "react";
+
+import { HomeIcon, Bolt, LogOut, Bot, Video, PiggyBank } from "lucide-react";
 import {
   Dock,
   DockIcon,
   DockItem,
   DockLabel,
 } from "@/components/motion-primitives/dock";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +56,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { showToast } from "@/lib/toaster";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
 
 const data = [
   {
@@ -41,51 +69,64 @@ const data = [
     href: "/",
   },
   {
-    title: "Generate",
-    icon: (
-      <DumbbellIcon className="h-full w-full text-white dark:text-neutral-300" />
-    ),
+    title: "Agents",
+    icon: <Bot className="h-full w-full text-white dark:text-neutral-300" />,
     href: "/generate",
   },
   {
-    title: "Components",
-    icon: (
-      <Component className="h-full w-full text-white dark:text-neutral-300" />
-    ),
-    href: "#",
+    title: "Meetings",
+    icon: <Video className="h-full w-full text-white dark:text-neutral-300" />,
+    href: "/hello",
   },
   {
-    title: "Activity",
+    title: "Pro Plan",
     icon: (
-      <Activity className="h-full w-full text-white dark:text-neutral-300" />
+      <PiggyBank className="h-full w-full text-white dark:text-neutral-300" />
     ),
     href: "#",
   },
 ];
 
 const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(containerRef, () => {
+    setIsOpen(false);
+  });
+
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
-  const toast = searchParams.get("toast");
+  const login_requiredToast = searchParams.get("toast");
   const toastShown = useRef(false);
-
+  const pathname = usePathname();
   useEffect(() => {
     if (!toastShown.current) {
-      if (toast === "register_success") {
-        showToast.success("You are registered successfully");
-        toastShown.current = true;
-      } else if (toast === "login_success") {
-        showToast.success("You have logged in");
-        toastShown.current = true;
-      } else if (toast === "login_required") {
+      if (login_requiredToast === "login_required") {
         showToast.warning("Please login to continue");
-        toastShown.current = true;
-      } else if (toast === "logged_out") {
-        showToast.warning("You are logged out");
         toastShown.current = true;
       }
     }
-  }, [toast]);
+  }, [login_requiredToast]);
+
+  useEffect(() => {
+    const toast = localStorage.getItem("toast");
+    if (!toast) return;
+
+    switch (toast) {
+      case "login_success":
+        showToast.success("You have logged in");
+        break;
+      case "register_success":
+        showToast.success("You are registered successfully");
+        break;
+      case "logged_out":
+        showToast.warning("You are logged out");
+        break;
+    }
+
+    localStorage.removeItem("toast");
+  }, []);
 
   return (
     <nav
@@ -112,7 +153,12 @@ const Navbar = () => {
               <Link key={idx} href={item.href}>
                 <DockItem
                   key={idx}
-                  className="aspect-square rounded-full cursor-pointer bg-[#0a0a1a]/40 border border-cyan-400/20 hover:shadow-[0_0_11px_4px_#00ffff33]"
+                  className={cn(
+                    "aspect-square rounded-full cursor-pointer border",
+                    "bg-[#0a0a1a]/40 border-cyan-400/20 hover:shadow-[0_0_11px_4px_#00ffff33]",
+                    pathname === item.href &&
+                      "bg-[#0a0a1a]/80 border-cyan-400/60 shadow-[0_0_15px_#00ffff55]"
+                  )}
                 >
                   <DockLabel>{item.title}</DockLabel>
                   <DockIcon>{item.icon}</DockIcon>
@@ -124,6 +170,42 @@ const Navbar = () => {
 
         {/* Right Side: Button or Avatar Dropdown */}
         <div className="shrink-0 flex">
+
+          {pathname === "/hello" && (
+<div className="relative mr-4" ref={containerRef}>
+            <MotionConfig transition={transition}>
+              <motion.div
+                animate={{ width: isOpen ? 200 : 34 }}
+                className={cn(
+                  "h-8  flex items-center border rounded-xl transition-all duration-300 overflow-hidden",
+                  "bg-[#0a0a1a]/40 border-cyan-400/20 backdrop-blur-md shadow-[0_0_8px_#00ffff22]"
+                )}
+              >
+                {!isOpen ? (
+                  <BButton
+                    onClick={() => setIsOpen(true)}
+                    ariaLabel="Search notes"
+                  >
+                    <Search className="h-5 w-5 text-white hover:text-cyan-300 transition" />
+                  </BButton>
+                ) : (
+                  <div className="flex items-center gap-2 w-full">
+                    <BButton onClick={() => setIsOpen(false)} ariaLabel="Back">
+                      <ArrowLeft className="h-5 w-5 text-white hover:text-cyan-300 transition" />
+                    </BButton>
+                    <input
+                      autoFocus
+                      placeholder="Search..."
+                      className="bg-transparent text-white placeholder:text-white/60 w-full focus:outline-none text-sm"
+                    />
+                  </div>
+                )}
+              </motion.div>
+            </MotionConfig>
+          </div>
+          )}
+          
+
           {status === "unauthenticated" && (
             <Link href="/auth/login">
               <Button
@@ -145,7 +227,7 @@ const Navbar = () => {
 
           {status === "authenticated" && (
             <DropdownMenu>
-              <DropdownMenuTrigger className="p-1 ml-2 bg-[#0a0a1a]/40 backdrop-blur-md border border-cyan-400/10 rounded-full shadow-[0_0_10px_#00ffff33] hover:shadow-[0_0_11px_4px_#00ffff66] transition-all duration-300">
+              <DropdownMenuTrigger className="p-1 bg-[#0a0a1a]/40 backdrop-blur-md border border-cyan-400/20 rounded-full shadow-[0_0_10px_#00ffff33] hover:shadow-[0_0_11px_4px_#00ffff66] transition-all duration-300">
                 <Avatar className="h-6.5 w-6.5 shadow-[0_0_6px_#00ffff33] transition-shadow duration-300">
                   <AvatarImage
                     src={
@@ -159,7 +241,7 @@ const Navbar = () => {
                 </Avatar>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent className="bg-[#0a0a1a]/40 backdrop-blur-lg rounded-xl mt-3 border border-cyan-400/20 shadow-[0_0_25px_#00ffff22] text-white w-38 p-2 animate-in fade-in zoom-in-95">
+              <DropdownMenuContent className="bg-[#0a0a1a]/40 backdrop-blur-lg rounded-xl mt-3 border border-cyan-400/20 shadow-[0_0_25px_#00ffff22] text-white w-40 p-2 animate-in fade-in zoom-in-95">
                 <DropdownMenuLabel className="text-white font-semibold px-3 pb-1">
                   {session.user?.name}
                 </DropdownMenuLabel>
@@ -176,8 +258,9 @@ const Navbar = () => {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                  onClick={() => {
-                    signOut({ callbackUrl: "/?toast=logged_out" });
+                  onClick={async () => {
+                    localStorage.setItem("toast", "logged_out");
+                    await signOut({ callbackUrl: "/" });
                   }}
                   className="flex items-center gap-2 text-red-400 hover:bg-red-500/20 px-3 py-2 rounded-md transition-all"
                 >

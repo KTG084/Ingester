@@ -38,8 +38,8 @@ const formSchema = z.object({
 const Page = () => {
   const [loading, setloading] = useState(false);
   const searchParams = useSearchParams();
-  const baseCallbackUrl = searchParams.get("callbackUrl") || "/";
-  const callbackUrl = `${baseCallbackUrl}?toast=register_success`;
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,11 +49,13 @@ const Page = () => {
       password: "",
     },
   });
-  const onClick = (provider: "google" | "github") => {
-    signIn(provider, {
-      callbackUrl,
-    });
-  };
+const onClick = (provider: "google" | "github") => {
+  localStorage.setItem("toast", "register_success");
+  signIn(provider, {
+    callbackUrl,
+  });
+};
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setloading(true);
@@ -69,6 +71,7 @@ const Page = () => {
         const errorMsg = data?.error || "Registration failed. Please try again";
         showToast.error(errorMsg);
       } else {
+        localStorage.setItem("toast", "register_success");
         signIn("credentials", {
           email: values.email,
           password: values.password,

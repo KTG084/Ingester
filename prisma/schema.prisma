@@ -45,6 +45,15 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+model VerificationToken {
+  id      String   @id @default(cuid()) @map("_id")
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
 model Plan {
   id          String      @id @map("_id") @db.ObjectId
   userId      String

@@ -35,8 +35,7 @@ import { showToast } from "@/lib/toaster";
 const Page = () => {
   const [loading, setloading] = useState(false);
   const searchParams = useSearchParams();
-  const baseCallbackUrl = searchParams.get("callbackUrl") || "/";
-  const callbackUrl = `${baseCallbackUrl}?toast=login_success`;
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,6 +45,7 @@ const Page = () => {
   });
 
   const onClick = (provider: "google" | "github") => {
+    localStorage.setItem("toast", "login_success");
     signIn(provider, {
       callbackUrl,
     });
@@ -61,6 +61,7 @@ const Page = () => {
       });
 
       if (res?.url) {
+        localStorage.setItem("toast", "login_success");
         window.location.href = callbackUrl;
       } else {
         showToast.error("Invalid email or password");
@@ -160,10 +161,7 @@ const Page = () => {
                 text-white font-semibold text-lg py-3 rounded-lg shadow-[0_4px_15px_rgba(0,255,255,0.3)] transition duration-300"
               >
                 {loading ? (
-                  <TextShimmerWave
-                    className="text-white font-mono text-sm"
-                    
-                  >
+                  <TextShimmerWave className="text-white font-mono text-sm">
                     Submitting...
                   </TextShimmerWave>
                 ) : (
