@@ -53,12 +53,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { showToast } from "@/lib/toaster";
 import { usePathname, useSearchParams } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { GeneratedAvatar } from "./generatedAvatar";
 
 const data = [
   {
@@ -71,7 +72,7 @@ const data = [
   {
     title: "Agents",
     icon: <Bot className="h-full w-full text-white dark:text-neutral-300" />,
-    href: "/generate",
+    href: "/agents",
   },
   {
     title: "Meetings",
@@ -170,41 +171,42 @@ const Navbar = () => {
 
         {/* Right Side: Button or Avatar Dropdown */}
         <div className="shrink-0 flex">
-
-          {pathname === "/hello" && (
-<div className="relative mr-4" ref={containerRef}>
-            <MotionConfig transition={transition}>
-              <motion.div
-                animate={{ width: isOpen ? 200 : 34 }}
-                className={cn(
-                  "h-8  flex items-center border rounded-xl transition-all duration-300 overflow-hidden",
-                  "bg-[#0a0a1a]/40 border-cyan-400/20 backdrop-blur-md shadow-[0_0_8px_#00ffff22]"
-                )}
-              >
-                {!isOpen ? (
-                  <BButton
-                    onClick={() => setIsOpen(true)}
-                    ariaLabel="Search notes"
-                  >
-                    <Search className="h-5 w-5 text-white hover:text-cyan-300 transition" />
-                  </BButton>
-                ) : (
-                  <div className="flex items-center gap-2 w-full">
-                    <BButton onClick={() => setIsOpen(false)} ariaLabel="Back">
-                      <ArrowLeft className="h-5 w-5 text-white hover:text-cyan-300 transition" />
+          {(pathname === "/hello" || pathname === "/agents") && (
+            <div className="relative mr-4" ref={containerRef}>
+              <MotionConfig transition={transition}>
+                <motion.div
+                  animate={{ width: isOpen ? 200 : 33 }}
+                  className={cn(
+                    "h-8  flex items-center border rounded-xl transition-all duration-300 overflow-hidden",
+                    "bg-[#0a0a1a]/40 border-cyan-400/20 backdrop-blur-md shadow-[0_0_8px_#00ffff22]"
+                  )}
+                >
+                  {!isOpen ? (
+                    <BButton
+                      onClick={() => setIsOpen(true)}
+                      ariaLabel="Search notes"
+                    >
+                      <Search className="h-5 w-5 text-white hover:text-cyan-300 transition" />
                     </BButton>
-                    <input
-                      autoFocus
-                      placeholder="Search..."
-                      className="bg-transparent text-white placeholder:text-white/60 w-full focus:outline-none text-sm"
-                    />
-                  </div>
-                )}
-              </motion.div>
-            </MotionConfig>
-          </div>
+                  ) : (
+                    <div className="flex items-center gap-2 w-full">
+                      <BButton
+                        onClick={() => setIsOpen(false)}
+                        ariaLabel="Back"
+                      >
+                        <ArrowLeft className="h-5 w-5 text-white hover:text-cyan-300 transition" />
+                      </BButton>
+                      <input
+                        autoFocus
+                        placeholder="Search..."
+                        className="bg-transparent text-white placeholder:text-white/60 w-full focus:outline-none text-sm"
+                      />
+                    </div>
+                  )}
+                </motion.div>
+              </MotionConfig>
+            </div>
           )}
-          
 
           {status === "unauthenticated" && (
             <Link href="/auth/login">
@@ -228,17 +230,19 @@ const Navbar = () => {
           {status === "authenticated" && (
             <DropdownMenu>
               <DropdownMenuTrigger className="p-1 bg-[#0a0a1a]/40 backdrop-blur-md border border-cyan-400/20 rounded-full shadow-[0_0_10px_#00ffff33] hover:shadow-[0_0_11px_4px_#00ffff66] transition-all duration-300">
-                <Avatar className="h-6.5 w-6.5 shadow-[0_0_6px_#00ffff33] transition-shadow duration-300">
-                  <AvatarImage
-                    src={
-                      session?.user?.image || "https://github.com/shadcn.png"
-                    }
-                    className="rounded-full object-cover"
-                  />
-                  <AvatarFallback className="text-white bg-[#0a0a1a]/70 font-semibold">
-                    KM
-                  </AvatarFallback>
-                </Avatar>
+                {session.user.image ? (
+                  <Avatar className="h-6.5 w-6.5 shadow-[0_0_6px_#00ffff33] transition-shadow duration-300">
+                    <AvatarImage
+                      src={session?.user?.image}
+                      className="rounded-full object-cover"
+                    />
+                  </Avatar>
+                ) : (
+                  <GeneratedAvatar
+                   seed={session.user.name} 
+                   className="h-6.5 w-6.5 shadow-[0_0_6px_#00ffff33] transition-shadow duration-300"
+                   variant="initials"/>
+                )}
               </DropdownMenuTrigger>
 
               <DropdownMenuContent className="bg-[#0a0a1a]/40 backdrop-blur-lg rounded-xl mt-3 border border-cyan-400/20 shadow-[0_0_25px_#00ffff22] text-white w-40 p-2 animate-in fade-in zoom-in-95">

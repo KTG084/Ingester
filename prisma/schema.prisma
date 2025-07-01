@@ -14,16 +14,15 @@ datasource db {
 }
 
 model User {
-  id                 String     @id @default(cuid()) @map("_id")
-  email              String     @unique
+  id                 String    @id @default(cuid()) @map("_id")
+  email              String    @unique
   password           String?
   emailVerified      DateTime?
   image              String?
   name               String?
   razorpayCustomerId String?
-  purchases          Purchase[]
   accounts           Account[]
-  Plan               Plan[]
+  Agents             Agents[]
 }
 
 model Account {
@@ -54,46 +53,12 @@ model VerificationToken {
   @@unique([email, token])
 }
 
-model Plan {
-  id          String      @id @map("_id") @db.ObjectId
-  userId      String
-  workoutPlan WorkOutPlan
-  purchases   Purchase[]
-  user        User        @relation(fields: [userId], references: [id])
-
-  @@unique([userId, id])
-  @@map("plans")
-}
-
-type WorkOutPlan {
-  schedule  String[]
-  exercises Exercises[]
-}
-
-type Exercises {
-  day      String
-  routines Routine[]
-}
-
-type Routine {
-  name        String
-  sets        Int?
-  reps        Int?
-  duration    String?
-  description String?
-  exercises   String[]
-}
-
-model Purchase {
-  id                 String @id @default(cuid()) @map("_id")
-  userId             String
-  planId             String @db.ObjectId
-  amount             Float
-  purchaseDate       Int
-  razorpayPurchaseId String @unique
-
-  user User @relation(fields: [userId], references: [id])
-  plan Plan @relation(fields: [planId], references: [id])
-
-  @@unique([userId, planId])
+model Agents {
+  id           String   @id @default(cuid()) @map("_id")
+  name         String   @unique
+  userId       String
+  instructions String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

@@ -6,7 +6,8 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: auto; /* Optional if you want a fixed background */
+  overflow-x: hidden;
+  overflow-y: auto; /* Optional if you want a fixed background */
 }
 @custom-variant dark (&:is(.dark *));
 

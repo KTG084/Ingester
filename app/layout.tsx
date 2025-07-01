@@ -35,7 +35,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable}`}
       >
         <body
-          className={`antialiased relative min-h-screen bg-gradient-to-b from-[#0f0f1c] via-[#0a0a1a] to-[#000] text-white ${geistSans.variable} ${geistMono.variable}`}
+          className={`antialiased relative min-h-screen p-0 bg-gradient-to-b from-[#0f0f1c] via-[#0a0a1a] to-[#000] text-white ${geistSans.variable} ${geistMono.variable}`}
         >
           <SessionProvider>
             <ClickSpark>
