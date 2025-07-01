@@ -3,6 +3,9 @@ import Credentials from "next-auth/providers/credentials";
 import * as z from "zod";
 import { prisma } from "./db/prisma";
 import bcrypt from "bcryptjs";
+import Github from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
+
 
 const LoginSchema = z.object({
   email: z.string().email({
@@ -15,6 +18,14 @@ const LoginSchema = z.object({
 });
 export default {
   providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
+    Github({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+    }),
     Credentials({
       credentials: {
         email: {

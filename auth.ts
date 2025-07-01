@@ -1,9 +1,72 @@
 import NextAuth from "next-auth";
 import authConfig from "./auth.config";
+import { prisma } from "@/db/prisma";
+import { Session } from "next-auth";
+import { JWT } from "next-auth/jwt";
+import { User } from "@prisma/client";
+import Razorpay from "razorpay";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "./db/prisma";
+
+const razorpay = new Razorpay({
+  key_id: process.env.NEXT_PUBLIC_RAZORPAY_API_KEY!,
+  key_secret: process.env.RAZORPAY_SECRET_API_KEY!,
+});
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  events: {
+    async signIn({ user }) {
+      if (!user.email) return;
+
+      const dbUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      });
+
+      if (dbUser && !dbUser.razorpayCustomerId) {
+        const customer = await razorpay.customers.create({
+          name: dbUser.name ?? "Github User",
+          email: dbUser.email,
+          fail_existing: 0,
+        });
+
+        await prisma.user.update({
+          where: { email: dbUser.email },
+          data: {
+            razorpayCustomerId: customer.id,
+          },
+        });
+      }
+    },
+  },
+  callbacks: {
+    async session({ session, token }: { session: Session; token: JWT }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+        session.user.image = token.picture as string;
+        session.user.razorpayCustomerId =
+          token.razorpayCustomerId as User["razorpayCustomerId"];
+      }
+      return session;
+    },
+    async jwt({ token }: { token: JWT }) {
+      if (!token.sub) return token;
+
+      const existingUser = await prisma.user.findUnique({
+        where: { id: token.sub },
+        select: {
+          email: true,
+          name: true,
+          razorpayCustomerId: true,
+        },
+      });
+
+      if (!existingUser) return token;
+
+      return {
+        ...token,
+        ...existingUser,
+      };
+    },
+  },
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   ...authConfig,
