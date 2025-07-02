@@ -9,7 +9,7 @@ const page = async () => {
       <Suspense
         //   todo
         fallback={
-          <div className="flex items-center justify-center h-screen w-full"></div>
+          <div className="flex items-center justify-center h-screen w-full">this is loading....</div>
         }
       >
         <AllAgents agents={agents} />

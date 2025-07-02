@@ -4,7 +4,7 @@ import { prisma } from "@/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
-    const { agentname, agentInst } = await req.json();
+    const { meetingname, agentId } = await req.json();
     const session = await auth();
 
     if (!session || !session.user?.id) {
@@ -14,36 +14,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!agentname || !agentInst) {
+    if (!meetingname || !agentId) {
       return NextResponse.json(
         { error: "Fill up the fields" },
         { status: 400 }
       );
     }
 
-    const existingAgent = await prisma.agents.findUnique({
+    const existingMeet = await prisma.meetings.findUnique({
       where: {
-        name: agentname,
+        name: meetingname,
       },
     });
 
-    if (existingAgent) {
+    if (existingMeet) {
       return NextResponse.json(
         { error: "Agent already registered" },
         { status: 400 }
       );
     }
 
-    await prisma.agents.create({
+    await prisma.meetings.create({
       data: {
-        name: agentname,
-        instructions: agentInst,
-        userId: session?.user.id,
+        name: meetingname,
+        userId: session.user.id,
+        agentId: agentId,
       },
     });
 
     return NextResponse.json(
-      { message: "Agent created Succesfully" },
+      { message: "Meeting created Succesfully" },
       { status: 200 }
     );
   } catch (error) {

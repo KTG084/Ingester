@@ -40,7 +40,6 @@ const Page = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -49,13 +48,12 @@ const Page = () => {
       password: "",
     },
   });
-const onClick = (provider: "google" | "github") => {
-  localStorage.setItem("toast", "register_success");
-  signIn(provider, {
-    callbackUrl,
-  });
-};
-
+  const onClick = (provider: "google" | "github") => {
+    localStorage.setItem("toast", "register_success");
+    signIn(provider, {
+      callbackUrl,
+    });
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setloading(true);
@@ -70,6 +68,7 @@ const onClick = (provider: "google" | "github") => {
       if (!res.ok) {
         const errorMsg = data?.error || "Registration failed. Please try again";
         showToast.error(errorMsg);
+        setloading(false);
       } else {
         localStorage.setItem("toast", "register_success");
         signIn("credentials", {

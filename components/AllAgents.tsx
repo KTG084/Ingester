@@ -1,6 +1,6 @@
 "use client";
 import { Agents } from "@prisma/client";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import TrueFocus from "./TrueFocus";
 import AnimatedContent from "./AnimatedContent";
 import ShinyText from "./ShinyText";
@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
 import AnimatedList from "./AnimatedList";
 import ProfileCard from "./ProfileCard";
+import { useAgentStore } from "@/store/agentStore";
 import {
   Dialog,
   DialogContent,
@@ -15,24 +16,37 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Agentcreator from "./Agentcreator";
+import { GeneratedAvatarUri } from "./genrateAvatarDataUri";
 
 type Props = {
   agents: Agents[];
 };
 
 const AllAgents = ({ agents }: Props) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { setagents } = useAgentStore();
+
+  useEffect(() => {
+    setagents(agents);
+  }, [agents, setagents]);
+
   const items = useMemo(() => {
     return agents.map((agent) => ({
       label: agent.name,
       value: agent.id,
       instructions: agent.instructions,
+      meetings: agent.meetings,
     }));
   }, [agents]);
 
   const [selectedItem, setSelectedItem] = useState(items[0]);
+  const avatarDataUri = GeneratedAvatarUri({
+    seed: selectedItem.label,
+    variant: "botttsNeutral",
+  });
   return (
     <div className="flex flex-col min-h-screen overflow-y-auto pb-6">
-      <div className="container mx-auto mt-6 px-4 h-full max-w-6xl">
+      <div className="container mx-auto mt-6 px-4 h-full max-w-5xl">
         <div className="text-center mb-8">
           <AnimatedContent
             distance={80} // slightly less intense motion
@@ -82,7 +96,7 @@ const AllAgents = ({ agents }: Props) => {
             <h2 className="text-xl font-semibold text-white border-b-2 drop-shadow-[0_2px_4px_rgba(103,232,249,0.5)] border-cyan-400 pb-1 inline-block">
               My Agents
             </h2>
-            <Dialog >
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button
                   className="cursor-pointer flex items-center gap-2 
@@ -118,7 +132,7 @@ const AllAgents = ({ agents }: Props) => {
                     Create Your Agent
                   </div>
                 </DialogTitle>
-                <Agentcreator />
+                <Agentcreator onSuccess={() => setDialogOpen(false)} />
               </DialogContent>
             </Dialog>
           </section>
@@ -138,26 +152,31 @@ const AllAgents = ({ agents }: Props) => {
         >
           <section className="flex justify-between bg-gradient-to-br from-[#0a0a1a]/30 to-[#07172f]/30 rounded-xl border border-cyan-500/10 backdrop-blur-md p-6 shadow-[0_4px_30px_rgba(0,0,0,0.2)]">
             <AnimatedList
-              items={items}
-              onItemSelect={(item, index) => {
+              items={items.map((item) => ({
+                ...item,
+                meetings: item.meetings ?? 0, 
+              }))}
+              onItemSelect={(item) => {
                 setSelectedItem(item);
               }}
               showGradients={false}
               enableArrowNavigation={true}
               displayScrollbar={false}
             />
+
             <div>
               <ProfileCard
                 className="mt-4 mr-10"
                 name={selectedItem?.label || "Agent Name"}
-                title={selectedItem?.label || "Agent Role"}
-                iconUrl="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWJvdC1pY29uIGx1Y2lkZS1ib3QiPjxwYXRoIGQ9Ik0xMiA4VjRIOCIvPjxyZWN0IHdpZHRoPSIxNiIgaGVpZ2h0PSIxMiIgeD0iNCIgeT0iOCIgcng9IjIiLz48cGF0aCBkPSJNMiAxNGgyIi8+PHBhdGggZD0iTTIwIDE0aDIiLz48cGF0aCBkPSJNMTUgMTN2MiIvPjxwYXRoIGQ9Ik05IDEzdjIiLz48L3N2Zz4="
-                handle="javicodes"
+                title={selectedItem?.instructions || "Agent Role"}
+                handle={selectedItem.label || "Agent Name"}
                 status="Online"
-                contactText="Contact Me"
-                avatarUrl={
-                  selectedItem?.image || "https://github.com/shadcn.png"
+                contactText={
+                  (selectedItem.meetings ?? 0) === 1
+                    ? "1 Meets"
+                    : `${selectedItem.meetings ?? 0} Meets`
                 }
+                avatarUrl={avatarDataUri}
                 showUserInfo={true}
                 enableTilt={true}
               />

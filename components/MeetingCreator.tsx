@@ -1,11 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form"; // Removed Form import from here
 import { z } from "zod";
 import {
-  Form, // Import Form from your UI components instead
+  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -18,45 +18,65 @@ import { Button } from "./ui/button";
 import { TextShimmerWave } from "./motion-primitives/text-shimmer-wave";
 import { showToast } from "@/lib/toaster";
 import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectGroup,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAgentStore } from "@/store/agentStore";
 import { GeneratedAvatar } from "./generatedAvatar";
-
 const formSchema = z.object({
-  agentname: z.string().min(2, {
-    message: "Agent name must be at least 2 characters.",
+  meetingname: z.string().min(2, {
+    message: "Meeting name must be at least 2 characters.",
   }),
-  agentInst: z.string().nonempty({
-    message: "Instruction must be given",
+  agentId: z.string().min(1, {
+    message: "Please select an agent",
   }),
 });
 
 const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
-  const [loading, setLoading] = useState(false); // Fixed: set proper boolean type
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      agentname: "",
-      agentInst: "",
+      meetingname: "",
+      agentId: "",
     },
   });
+  const agents = useAgentStore((state) => state.agents);
+
+  const itemsAgent = useMemo(() => {
+    return agents!.map((agent) => ({
+      label: agent.name,
+      value: agent.id,
+      instructions: agent.instructions,
+      meetings: agent.meetings,
+    }));
+  }, [agents]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(false);
+    console.log(values)
     try {
-      const res = await fetch("/api/agents", {
+      const res = await fetch("/api/meeting", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
       const data = await res.json();
       if (!res.ok) {
-        const errorMsg = data?.error || "Registration failed. Please try again";
+        const errorMsg = data?.error || "Meeting Creation failed. Please try again";
         showToast.error(errorMsg);
         setLoading(false);
       } else {
-        localStorage.setItem("toast", "agent_success");
+        localStorage.setItem("toast", "meeting_success");
         onSuccess();
-        router.push("/agents");
+        router.push("/meetings");
       }
     } catch (error: unknown) {
       let fallbackMessage = "Something went wrong. Please try again";
@@ -74,15 +94,9 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 w-full max-w-md mx-auto"
         >
-          <GeneratedAvatar
-            seed={form.watch("agentname")}
-            variant="botttsNeutral"
-            className="size-25 mx-auto shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]
-"
-          />
           <FormField
             control={form.control}
-            name="agentname"
+            name="meetingname"
             render={({ field }) => (
               <FormItem className="group">
                 <FormLabel
@@ -90,13 +104,13 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
                                group-focus-within:text-cyan-300 transition-colors duration-200
                                drop-shadow-sm"
                 >
-                  Agent Name
+                  Meeting Name
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type="text"
-                      placeholder="Enter your agent's name..."
+                      placeholder="Meeting ka naam likh..."
                       {...field}
                       className="w-full h-12 bg-gradient-to-r from-slate-800/40 to-slate-900/40 
                           backdrop-blur-xl text-white placeholder:text-slate-400
@@ -120,7 +134,7 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
                   className="text-slate-400 text-sm font-light tracking-wide
                                      opacity-80 hover:opacity-100 transition-opacity duration-200"
                 >
-                  Choose a memorable name for your AI agent
+                  Choose a memorable name for your Meet
                 </FormDescription>
                 <FormMessage className="text-red-400 text-sm font-medium" />
               </FormItem>
@@ -130,45 +144,82 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
           {/* Instructions Field */}
           <FormField
             control={form.control}
-            name="agentInst"
+            name="agentId"
             render={({ field }) => (
               <FormItem className="group">
                 <FormLabel
-                  className="text-cyan-100 text-lg font-medium tracking-wide
-                               group-focus-within:text-cyan-300 transition-colors duration-200
-                               drop-shadow-sm"
+                  className="text-cyan-100 text-lg font-medium tracking-wide 
+                   group-focus-within:text-cyan-300 transition-colors duration-200
+                   drop-shadow-sm"
                 >
-                  Instructions
+                  Select Agent
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <textarea
-                      placeholder="Describe your agent's role and behavior..."
-                      {...field}
-                      rows={4}
-                      className="w-full bg-gradient-to-r from-slate-800/40 to-slate-900/40 
-                          backdrop-blur-xl text-white placeholder:text-slate-400
-                          border border-cyan-500/30 rounded-xl text-base font-medium
-                          focus-visible:ring-2 focus-visible:ring-cyan-400/50 
-                          focus-visible:border-cyan-400/70 focus-visible:outline-none
-                          transition-all duration-300 ease-out resize-none
-                          hover:border-cyan-400/50 hover:bg-slate-800/60
-                          shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]
-                          focus-visible:shadow-[0_0_20px_rgba(34,211,238,0.3)]
-                          px-4 py-3 leading-relaxed"
-                    />
-                    <div
-                      className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/5 to-blue-500/5 
-                            pointer-events-none opacity-0 group-focus-within:opacity-100 
-                            transition-opacity duration-300"
-                    />
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger
+                        className="w-full h-12 bg-gradient-to-r from-slate-800/40 to-slate-900/40 
+                backdrop-blur-xl text-white placeholder:text-slate-400
+                border border-cyan-500/30 rounded-xl text-base font-medium
+                focus-visible:ring-2 focus-visible:ring-cyan-400/50 
+                focus-visible:border-cyan-400/70 focus-visible:outline-none
+                transition-all duration-300 ease-out
+                hover:border-cyan-400/50 hover:bg-slate-800/60
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]
+                focus-visible:shadow-[0_0_20px_rgba(34,211,238,0.3)]
+                px-4 py-7"
+                      >
+                        <SelectValue placeholder="Select your Agent" />
+                      </SelectTrigger>
+                      <div
+                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/5 to-blue-500/5 
+                pointer-events-none opacity-0 group-focus-within:opacity-100 
+                transition-opacity duration-300"
+                      />
+                      <SelectContent
+                        className="bg-slate-900/95 border border-cyan-500/20 backdrop-blur-md 
+                rounded-xl shadow-xl min-w-[280px] p-2 z-50"
+                      >
+                        <SelectGroup>
+                          <SelectLabel className="text-cyan-300 text-xs font-semibold tracking-widest px-3 py-1">
+                            Available Agents
+                          </SelectLabel>
+                          {itemsAgent.map((item) => (
+                            <SelectItem
+                              key={item.value}
+                              value={item.value}
+                              className="rounded-lg p-3 mx-1 my-1 hover:bg-gradient-to-r 
+                    hover:from-blue-900/20 hover:to-indigo-900/20 
+                    focus:bg-gradient-to-r focus:from-blue-800/30 focus:to-indigo-800/30 
+                    transition-all duration-200 cursor-pointer group/item"
+                            >
+                              <span className="flex items-center gap-3">
+                                <GeneratedAvatar
+                                  seed={item.label}
+                                  variant="botttsNeutral"
+                                  className="w-8 h-8 rounded-full ring-2 ring-slate-700 
+                          group-hover/item:ring-blue-600 transition-all duration-200 shadow-sm"
+                                />
+                                <span className="text-white font-medium tracking-wide group-hover/item:text-blue-300 transition-colors duration-200">
+                                  {item.label}
+                                </span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </FormControl>
                 <FormDescription
                   className="text-slate-400 text-sm font-light tracking-wide
-                                     opacity-80 hover:opacity-100 transition-opacity duration-200"
+          opacity-80 hover:opacity-100 transition-opacity duration-200"
                 >
-                  Define your agent&apos;s personality and capabilities
+                  Choose a personalized agent
                 </FormDescription>
                 <FormMessage className="text-red-400 text-sm font-medium" />
               </FormItem>

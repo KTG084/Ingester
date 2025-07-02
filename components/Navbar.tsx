@@ -77,7 +77,7 @@ const data = [
   {
     title: "Meetings",
     icon: <Video className="h-full w-full text-white dark:text-neutral-300" />,
-    href: "/hello",
+    href: "/meetings",
   },
   {
     title: "Pro Plan",
@@ -123,6 +123,12 @@ const Navbar = () => {
         break;
       case "logged_out":
         showToast.warning("You are logged out");
+        break;
+      case "agent_success":
+        showToast.success("Agent created successfully");
+        break;
+      case "meeting_success":
+        showToast.warning("Meeting created successfully");
         break;
     }
 
@@ -239,9 +245,10 @@ const Navbar = () => {
                   </Avatar>
                 ) : (
                   <GeneratedAvatar
-                   seed={session.user.name} 
-                   className="h-6.5 w-6.5 shadow-[0_0_6px_#00ffff33] transition-shadow duration-300"
-                   variant="initials"/>
+                    seed={session.user.name}
+                    className="h-6.5 w-6.5 shadow-[0_0_6px_#00ffff33] transition-shadow duration-300"
+                    variant="initials"
+                  />
                 )}
               </DropdownMenuTrigger>
 

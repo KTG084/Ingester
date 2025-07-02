@@ -64,6 +64,7 @@ const Page = () => {
         localStorage.setItem("toast", "login_success");
         window.location.href = callbackUrl;
       } else {
+        setloading(false);
         showToast.error("Invalid email or password");
       }
     } catch (err: unknown) {

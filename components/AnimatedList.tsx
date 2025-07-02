@@ -8,6 +8,15 @@ import React, {
 } from "react";
 import { motion, useInView } from "framer-motion";
 import { GeneratedAvatar } from "./generatedAvatar";
+import { Video } from "lucide-react";
+
+// Define the item type
+type Item = {
+  label: string;
+  value: string;
+  instructions: string;
+  meetings: number;
+};
 
 interface AnimatedItemProps {
   children: ReactNode;
@@ -26,6 +35,7 @@ const AnimatedItem: React.FC<AnimatedItemProps> = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { amount: 0.5, once: false });
+
   return (
     <motion.div
       ref={ref}
@@ -42,12 +52,6 @@ const AnimatedItem: React.FC<AnimatedItemProps> = ({
   );
 };
 
-type Item = {
-  label: string;
-  value: string;
-  instructions: string;
-};
-
 interface AnimatedListProps {
   items?: Item[];
   onItemSelect?: (item: Item, index: number) => void;
@@ -61,21 +65,24 @@ interface AnimatedListProps {
 
 const AnimatedList: React.FC<AnimatedListProps> = ({
   items = [
-    "Item 1",
-    "Item 2",
-    "Item 3",
-    "Item 4",
-    "Item 5",
-    "Item 6",
-    "Item 7",
-    "Item 8",
-    "Item 9",
-    "Item 10",
-    "Item 11",
-    "Item 12",
-    "Item 13",
-    "Item 14",
-    "Item 15",
+    {
+      label: "Agent Alpha",
+      value: "agent-alpha",
+      instructions: "This is Agent Alpha.",
+      meetings: 2,
+    },
+    {
+      label: "Agent Beta",
+      value: "agent-beta",
+      instructions: "Agent Beta's instructions go here.",
+      meetings: 0,
+    },
+    {
+      label: "Agent Gamma",
+      value: "agent-gamma",
+      instructions: "Instructions for Gamma agent.",
+      meetings: 5,
+    },
   ],
   onItemSelect,
   showGradients = true,
@@ -86,15 +93,13 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   initialSelectedIndex = -1,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] =
-    useState<number>(initialSelectedIndex);
+  const [selectedIndex, setSelectedIndex] = useState<number>(initialSelectedIndex);
   const [keyboardNav, setKeyboardNav] = useState<boolean>(false);
   const [topGradientOpacity, setTopGradientOpacity] = useState<number>(0);
   const [bottomGradientOpacity, setBottomGradientOpacity] = useState<number>(1);
 
   const handleScroll = (e: UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } =
-      e.target as HTMLDivElement;
+    const { scrollTop, scrollHeight, clientHeight } = e.target as HTMLDivElement;
     setTopGradientOpacity(Math.min(scrollTop / 50, 1));
     const bottomDistance = scrollHeight - (scrollTop + clientHeight);
     setBottomGradientOpacity(
@@ -104,6 +109,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
 
   useEffect(() => {
     if (!enableArrowNavigation) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowDown" || (e.key === "Tab" && !e.shiftKey)) {
         e.preventDefault();
@@ -141,10 +147,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
       const itemBottom = itemTop + selectedItem.offsetHeight;
       if (itemTop < containerScrollTop + extraMargin) {
         container.scrollTo({ top: itemTop - extraMargin, behavior: "smooth" });
-      } else if (
-        itemBottom >
-        containerScrollTop + containerHeight - extraMargin
-      ) {
+      } else if (itemBottom > containerScrollTop + containerHeight - extraMargin) {
         container.scrollTo({
           top: itemBottom - containerHeight + extraMargin,
           behavior: "smooth",
@@ -184,17 +187,16 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
           >
             <div
               className={`relative p-4 rounded-xl border border-cyan-400/10 backdrop-blur-lg 
-  bg-gradient-to-br from-[#0a0a1a]/80 via-[#0f1b2e]/90 to-[#07172f]/90 
-  shadow-[0_8px_24px_rgba(0,255,255,0.05)] hover:shadow-[0_12px_30px_rgba(34,211,238,0.15)] 
-  transition-all duration-300 ease-in-out transform hover:scale-[1.02] group
-  ${
-    selectedIndex === index
-      ? "ring-[1.5px] ring-cyan-300/50 bg-cyan-300/5 shadow-cyan-300/20"
-      : ""
-  } ${itemClassName}`}
+                bg-gradient-to-br from-[#0a0a1a]/80 via-[#0f1b2e]/90 to-[#07172f]/90 
+                shadow-[0_8px_24px_rgba(0,255,255,0.05)] hover:shadow-[0_12px_30px_rgba(34,211,238,0.15)] 
+                transition-all duration-300 ease-in-out transform hover:scale-[1.02] group
+                ${
+                  selectedIndex === index
+                    ? "ring-[1.5px] ring-cyan-300/50 bg-cyan-300/5 shadow-cyan-300/20"
+                    : ""
+                } ${itemClassName}`}
             >
               <div className="flex items-center gap-4">
-                {/* Avatar */}
                 <div className="flex-shrink-0">
                   <GeneratedAvatar
                     seed={item.label}
@@ -202,8 +204,6 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
                     variant="botttsNeutral"
                   />
                 </div>
-
-                {/* Text Content */}
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-semibold text-cyan-300 drop-shadow-[0_1px_4px_#22d3ee] leading-tight">
                     {item.label}
@@ -212,11 +212,32 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
                     {item.instructions}
                   </p>
                 </div>
+                <div className="flex-shrink-0">
+                  <h3
+                    className="
+                      text-sm font-semibold flex items-center gap-1.5
+                      bg-gradient-to-r from-cyan-500/20 to-blue-500/20 
+                      border border-cyan-400/30 
+                      rounded-xl 
+                      px-3 py-1.5
+                      text-cyan-300 
+                      shadow-lg shadow-cyan-500/25
+                      backdrop-blur-sm
+                      hover:shadow-cyan-500/40 hover:border-cyan-400/50
+                      transition-all duration-300
+                      leading-tight
+                    "
+                  >
+                    {(item.meetings ?? 0) === 1 ? "1 " : `${item.meetings ?? 0}`}
+                    <Video className="w-4 h-4" />
+                  </h3>
+                </div>
               </div>
             </div>
           </AnimatedItem>
         ))}
       </div>
+
       {showGradients && (
         <>
           <div
