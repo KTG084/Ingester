@@ -4,7 +4,7 @@ import AnimatedContent from "@/components/AnimatedContent";
 import ShinyText from "@/components/ShinyText";
 import TrueFocus from "@/components/TrueFocus";
 import { Button } from "@/components/ui/button";
-import { Agents, Meetings, User } from "@prisma/client";
+import { Agents, Meetings} from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,6 @@ import { Plus } from "lucide-react";
 import React, { useMemo, useState } from "react";
 
 type ExtendedMeeting = Meetings & {
-  user: User;
   agent: Agents;
 };
 type Props = {
@@ -31,8 +30,10 @@ import {
 } from "@/components/ui/table";
 import { GeneratedAvatar } from "./generatedAvatar";
 import MeetingCreator from "@/components/MeetingCreator";
+import { useRouter } from "next/navigation";
 
 const Page = ({ meetings }: Props) => {
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const items = useMemo(() => {
     return meetings.map((meeting) => ({
@@ -40,11 +41,8 @@ const Page = ({ meetings }: Props) => {
       value: meeting.id,
       status: meeting.status,
       agent: meeting.agent,
-      user: meeting.user,
     }));
   }, [meetings]);
-
-  
 
   return (
     <div className="flex flex-col min-h-screen overflow-y-auto pb-6">
@@ -92,7 +90,7 @@ const Page = ({ meetings }: Props) => {
           animateOpacity
           scale={1.05} // subtle, avoids "zoomy" feel
           threshold={0.1}
-          delay={0.35}
+          delay={0.15}
         >
           <section className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-white border-b-2 drop-shadow-[0_2px_4px_rgba(103,232,249,0.5)] border-cyan-400 pb-1 inline-block">
@@ -149,7 +147,7 @@ const Page = ({ meetings }: Props) => {
           animateOpacity
           scale={1.05} // subtle, avoids "zoomy" feel
           threshold={0.1}
-          delay={0.35}
+          delay={0.15}
         >
           <section className="flex items-center justify-between mb-6">
             <Table className="w-full border border-cyan-500/10 rounded-xl backdrop-blur-md shadow-[0_8px_32px_rgba(0,255,255,0.05)] overflow-hidden">
@@ -171,6 +169,11 @@ const Page = ({ meetings }: Props) => {
                 {items.map((item) => (
                   <TableRow
                     key={item.value}
+                    onClick={() => {
+                      router.push(
+                        `/meetings/${item.value}/agent/${item.agent.id}`
+                      );
+                    }}
                     className="hover:bg-gradient-to-r from-cyan-500/5 to-blue-500/5 transition-colors duration-300 group"
                   >
                     <TableCell className="px-4 py-3 font-medium text-white group-hover:text-cyan-100 transition-colors">
@@ -194,7 +197,7 @@ const Page = ({ meetings }: Props) => {
               ${
                 item.status === "UPCOMING"
                   ? "bg-gradient-to-r from-emerald-400/10 to-emerald-400/5 text-emerald-300 border-emerald-400/20 shadow-emerald-400/20"
-                  : item.status === "ONGOING"
+                  : item.status === "ACTIVE"
                   ? "bg-gradient-to-r from-amber-400/10 to-amber-400/5 text-amber-300 border-amber-400/20 shadow-amber-400/20"
                   : item.status === "COMPLETED"
                   ? "bg-gradient-to-r from-cyan-400/10 to-cyan-400/5 text-cyan-300 border-cyan-400/20 shadow-cyan-400/20"

@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { vapi } from "@/lib/vapi";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -20,6 +19,7 @@ import {
 import { showToast } from "@/lib/toaster";
 import { TextShimmerWave } from "@/components/motion-primitives/text-shimmer-wave";
 import Noise from "@/components/Noise";
+import { Video } from "lucide-react";
 
 const Page = () => {
   const [callActive, setcallActive] = useState(false);
@@ -91,24 +91,6 @@ const Page = () => {
       setconnnecting(false);
       setcallActive(false);
     };
-
-    vapi
-      .on("call-start", handleCallStart)
-      .on("call-end", handleCallEnded)
-      .on("speech-start", handleSpeechStart)
-      .on("speech-end", handleSpeechEnded)
-      .on("message", handleMessage)
-      .on("error", handleError);
-
-    return () => {
-      vapi
-        .off("call-start", handleCallStart)
-        .off("call-end", handleCallEnded)
-        .off("speech-start", handleSpeechStart)
-        .off("speech-end", handleSpeechEnded)
-        .off("message", handleMessage)
-        .off("error", handleError);
-    };
   });
 
   const toggleCall = async () => {
@@ -162,22 +144,11 @@ const Page = () => {
             threshold={0.1}
             delay={0.15}
           >
-            <TrueFocus
-              sentence="Generate Your Fitness Program"
-              manualMode={true}
-              glowColor="#67e8f9"
-              blurAmount={5}
-              borderColor="#67e8f9"
-              animationDuration={0.5}
-              pauseBetweenAnimations={1}
-            />
-            <div className="mt-7">
-              <ShinyText
-                text="Have a voice conversation with our AI assistant to create your personalized plan"
-                disabled={true}
-                speed={3}
-                className="text-cyan-300 drop-shadow-[0_0_10px_#67e8f9] text-lg custom-class"
-              />
+            <div className="flex justify-center items-center gap-3 mb-8">
+              <Video className="w-12 h-12 text-cyan-400/90 drop-shadow-lg" />
+              <h1 className="text-4xl font-medium text-white/95 tracking-tight">
+                uibhjno
+              </h1>
             </div>
           </AnimatedContent>
         </div>

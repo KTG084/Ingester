@@ -128,7 +128,7 @@ const Navbar = () => {
         showToast.success("Agent created successfully");
         break;
       case "meeting_success":
-        showToast.warning("Meeting created successfully");
+        showToast.success("Meeting created successfully");
         break;
     }
 
@@ -146,7 +146,7 @@ const Navbar = () => {
     >
       <div className="flex items-center justify-between w-full gap-4">
         <div className="cursor-pointer text-lg font-semibold whitespace-nowrap">
-          websitename
+          AI-गुरु
         </div>
 
         {/* Dock */}

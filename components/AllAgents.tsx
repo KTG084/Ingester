@@ -90,7 +90,7 @@ const AllAgents = ({ agents }: Props) => {
           animateOpacity
           scale={1.05} // subtle, avoids "zoomy" feel
           threshold={0.1}
-          delay={0.35}
+          delay={0.15}
         >
           <section className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-white border-b-2 drop-shadow-[0_2px_4px_rgba(103,232,249,0.5)] border-cyan-400 pb-1 inline-block">
@@ -148,7 +148,7 @@ const AllAgents = ({ agents }: Props) => {
           animateOpacity
           scale={1.05} // subtle, avoids "zoomy" feel
           threshold={0.1}
-          delay={0.35}
+          delay={0.15}
         >
           <section className="flex justify-between bg-gradient-to-br from-[#0a0a1a]/30 to-[#07172f]/30 rounded-xl border border-cyan-500/10 backdrop-blur-md p-6 shadow-[0_4px_30px_rgba(0,0,0,0.2)]">
             <AnimatedList

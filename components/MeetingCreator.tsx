@@ -60,8 +60,7 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
   }, [agents]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setLoading(false);
-    console.log(values)
+    setLoading(true);
     try {
       const res = await fetch("/api/meeting", {
         method: "POST",
@@ -70,11 +69,12 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
       });
       const data = await res.json();
       if (!res.ok) {
-        const errorMsg = data?.error || "Meeting Creation failed. Please try again";
+        const errorMsg =
+          data?.error || "Meeting Creation failed. Please try again";
         showToast.error(errorMsg);
         setLoading(false);
       } else {
-        localStorage.setItem("toast", "meeting_success");
+        showToast.success("Meeting created successfully");
         onSuccess();
         router.push("/meetings");
       }
@@ -84,6 +84,8 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
         fallbackMessage = error.message;
       }
       showToast.error(fallbackMessage);
+    } finally {
+      setLoading(false);
     }
   }
 

@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
+import { GeneratedAvatarUri } from "@/components/genrateAvatarDataUri";
 import { prisma } from "@/db/prisma";
+import { streamVideo } from "@/lib/streamVideo";
 
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
@@ -34,13 +36,60 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await prisma.meetings.create({
+    const agent = await prisma.agents.findUnique({
+      where: { id: agentId },
+    });
+
+    if (!agent) {
+      return NextResponse.json(
+        { error: "Selected agent does not exist" },
+        { status: 400 }
+      );
+    }
+
+    const creMeet = await prisma.meetings.create({
       data: {
         name: meetingname,
         userId: session.user.id,
         agentId: agentId,
       },
     });
+
+    const call = streamVideo.video.call("default", creMeet.id);
+    await call.create({
+      data: {
+        created_by_id: session.user.id,
+        custom: {
+          meetingId: creMeet.id,
+          meetingName: creMeet.name,
+        },
+        settings_override: {
+          transcription: {
+            language: "en",
+            mode: "auto-on",
+            closed_caption_mode: "auto-on",
+          },
+          recording: {
+            mode: "auto-on",
+            quality: "1080p",
+          },
+        },
+      },
+    });
+
+    await streamVideo.upsertUsers([
+      {
+        id: agent.id,
+        name: agent.id,
+        role: "user",
+        image:
+          session.user.image ??
+          GeneratedAvatarUri({
+            seed: session.user.name,
+            variant: "botttsNeutral",
+          }),
+      },
+    ]);
 
     return NextResponse.json(
       { message: "Meeting created Succesfully" },

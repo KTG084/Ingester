@@ -88,7 +88,7 @@ model Meetings {
 
 enum MeetingStatus {
   UPCOMING
-  ONGOING
+  ACTIVE
   COMPLETED
   PROCESSING
   CANCELLED

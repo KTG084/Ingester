@@ -41,7 +41,7 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setLoading(false);
+    setLoading(true);
     try {
       const res = await fetch("/api/agents", {
         method: "POST",
@@ -54,8 +54,8 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
         showToast.error(errorMsg);
         setLoading(false);
       } else {
-        localStorage.setItem("toast", "agent_success");
         onSuccess();
+        showToast.success("Agent created successfully")
         router.push("/agents");
       }
     } catch (error: unknown) {
@@ -64,6 +64,8 @@ const Agentcreator = ({ onSuccess }: { onSuccess: () => void }) => {
         fallbackMessage = error.message;
       }
       showToast.error(fallbackMessage);
+    }finally{
+      setLoading(false)
     }
   }
 

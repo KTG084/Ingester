@@ -6,15 +6,20 @@ import React, { Suspense } from "react";
 const page = async () => {
   const session = await auth();
   try {
+    if (!session || !session.user.id) {
+      return <div>You need to login first</div>;
+    }
     const meetings = await prisma.meetings.findMany({
       where: {
         userId: session?.user.id,
+        
       },
-      include:{
-        user:true,
-        agent:true,
-      }
+      include: {
+        agent: true,
+      },
     });
+
+    
 
     return (
       <Suspense
